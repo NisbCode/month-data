@@ -1,5 +1,5 @@
 # SOFC - Sistema de Organização Financeira em Categorias
-Visualizador de financias.
+Visualizador de finanças.
 
 ## Objetivo: facilitar uma organização financeira por meio de:
 - Categorias definidas pelo usuário;

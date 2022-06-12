@@ -10,20 +10,21 @@ from pandas.tseries.offsets import CustomBusinessDay
 pd.set_option('display.max_columns', None)    # <-- Mostrar todas as colunas 
 
 # Valores fantasia
-ACRESCIMO_VR_FIXO = 700
-ACRESCIMO_SALARIO_FIXO_1 = 1000
-ACRESCIMO_SALARIO_FIXO_2 = 1142.80
-TOTAL_VR_INICIO = 930
-TOTAL_SALARIO_INICIO = 2385.54
-TOTAL_SALARIO_FINAL = TOTAL_SALARIO_INICIO
-TOTAL_VR_FINAL = TOTAL_VR_INICIO
+ACRESCIMO_VR_FIXO           = 700
+ACRESCIMO_SALARIO_FIXO_1    = 1000
+ACRESCIMO_SALARIO_FIXO_2    = 1142.80
+TOTAL_VR_INICIO             = 930
+TOTAL_SALARIO_INICIO        = 2385.54
+TOTAL_SALARIO_FINAL         = TOTAL_SALARIO_INICIO
+TOTAL_VR_FINAL              = TOTAL_VR_INICIO
 
-#MONTH = datetime.now().month
-TODAY = datetime.today()
-MONTH = 5                           
-YEAR = datetime.now().year
-FILE_CSV_BACKUP = './dados_salario_mensal_de_' + str(MONTH) + '-' + str(YEAR) + '.csv'
-FILE_CSV_BACKUP_AUX = './dados_salario_mensal_de_' + str(MONTH) + '-' + str(YEAR) + 'AUX.csv'
+#MONTH                      = datetime.now().month
+TODAY                       = datetime.today().strftime("%d/%m/%Y")
+MONTH                       = 5                           
+YEAR                        = datetime.now().year
+PATH_FOLDER                 = "./backup/"
+FILE_CSV_BACKUP             = PATH_FOLDER + "dados_salario_mensal_de_" + str(MONTH) + "-" + str(YEAR) + ".csv"
+FILE_CSV_BACKUP_AUX         = PATH_FOLDER + "dados_salario_mensal_de_" + str(MONTH) + "-" + str(YEAR) + "AUX.csv"
 
 
 
@@ -56,8 +57,8 @@ def monthSalary():
 
 
 def whichDay(dia):
-    date_time_obj = datetime.strptime(dia, '%d/%m/%Y')
-    date_time_obj_aux = datetime.strptime(dia, '%d/%m/%Y')
+    date_time_obj = datetime.strptime(dia, "%d/%m/%Y")
+    date_time_obj_aux = datetime.strptime(dia, "%d/%m/%Y")
     holidays = open("./holidays.txt", "r")
     readfile = holidays.read()
     valid = True
@@ -120,7 +121,7 @@ internet =                          np.array([100])
 money_given_to_friends =            np.array([26.98])
 money_received_from_friends =       np.array([40, 66.66])
 other =                             np.array([39.89, 102])
-date_of_backup =                    np.array([TODAY.strftime("%d/%m/%Y")])
+date_of_backup =                    np.array([TODAY])
 
 
 
@@ -171,19 +172,32 @@ list = {
 .##.....##.##.....##..#####.##.###....########..##.....##..######..##....##..#######..##.......
 """
 
+# IDEIA DE SOLUÇÃO: AO PASSAR CSV DE VOLTA, TENTA LER IGNORANDO OS NAN
 
 if os.path.isfile(FILE_CSV_BACKUP):
-    print("??????????????????")
     a_df = pd.read_csv(FILE_CSV_BACKUP)
-    df = pd.DataFrame(dict([(k,pd.Series(v)) for k,v in list.items()]))
-    a_df = pd.concat([a_df, df])
-    a_df.to_csv(FILE_CSV_BACKUP_AUX, index=False)
+    last_backup_day = str(a_df.Historico_Backup.dropna().iat[-1])
 
-    print(a_df)
+    if last_backup_day != TODAY:
+        df = pd.DataFrame(dict([(k,pd.Series(v)) for k,v in list.items()]))
+        a_df = pd.concat([a_df, df])
+        a_df.to_csv(FILE_CSV_BACKUP_AUX, index=False)
+
+        b_df = pd.read_csv(FILE_CSV_BACKUP_AUX)
+        b_df.to_csv(FILE_CSV_BACKUP, index=False)
+
+        print(last_backup_day)
+        os.remove(FILE_CSV_BACKUP_AUX) if os.path.isfile(FILE_CSV_BACKUP_AUX) else print("Arquivo não existe")
+    else:
+        print("O backup de hoje já foi efetuado.")
+
 else:
     df = pd.DataFrame(dict([(k,pd.Series(v)) for k,v in list.items()]))
     df.to_csv(FILE_CSV_BACKUP, index=False)
     df = pd.read_csv(FILE_CSV_BACKUP)
+
+
+"""
 
 
 print("========================================================================")
@@ -216,3 +230,7 @@ printSum("Amigos",                      "Dinheiro dado para amigos")
 printSum("Outro",                       "Gastos com outro não listado:")
 
 
+
+
+
+"""
